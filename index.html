@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Word Form Master 8</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --secondary: #06B6D4;
+      --success: #10B981;
+      --danger: #EF4444;
+      --bg: #F8FAFC;
+      --card: #FFFFFF;
+      --text: #1E293B;
+    }
+    * { box-sizing: border-box; font-family: 'Quicksand', sans-serif; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); padding: 16px; display: flex; justify-content: center; }
+    .app-container { width: 100%; max-width: 550px; background: var(--card); border-radius: 24px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); }
+    
+    /* Header & Unit Selector */
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .brand { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+    select { padding: 8px 12px; border-radius: 12px; border: 2px solid #E2E8F0; font-weight: 700; color: var(--text); outline: none; }
+
+    /* Navigation Tabs (5 Trạm) */
+    .tabs-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; }
+    .tab-btn { flex: 1; min-width: 80px; padding: 8px 4px; background: #F1F5F9; border: none; border-radius: 12px; font-weight: 700; font-size: 0.78rem; cursor: pointer; text-align: center; color: #64748B; transition: all 0.2s; }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+
+    /* Content Area */
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+
+    /* Trạm 1: Pocket Book */
+    .wf-card { background: #F8FAFC; border: 2px solid #E2E8F0; border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+    .wf-root { font-size: 1.15rem; font-weight: 800; color: var(--primary); display: flex; justify-content: space-between; }
+    .wf-meaning { font-size: 0.9rem; color: #64748B; margin-bottom: 8px; font-weight: 600; }
+    .wf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.85rem; }
+    .wf-item { background: #fff; padding: 6px 10px; border-radius: 8px; border: 1px solid #E2E8F0; }
+    .tag { font-weight: 800; color: var(--secondary); margin-right: 4px; }
+
+    /* Question & Sentence Cards */
+    .box-sentence { background: #EEF2FF; border: 2px dashed #C7D2FE; border-radius: 18px; padding: 18px; font-size: 1.15rem; text-align: center; margin-bottom: 16px; line-height: 1.6; }
+    .clue-tag { background: #FEF08A; padding: 2px 6px; border-radius: 6px; font-weight: 800; color: #854D0E; }
+    .blank-tag { font-weight: 800; color: var(--primary); text-decoration: underline; }
+    .root-badge { display: inline-block; background: #6366F1; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; margin-top: 8px; }
+
+    /* Buttons & Inputs */
+    .grid-pos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .btn-action { background: #fff; border: 2.5px solid #E2E8F0; padding: 12px; border-radius: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.1s; }
+    .btn-action:active { transform: scale(0.97); }
+    .btn-action.selected { border-color: var(--primary); background: #EEF2FF; color: var(--primary); }
+
+    .input-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    input[type="text"] { flex: 1; padding: 12px 14px; border-radius: 14px; border: 2px solid #CBD5E1; font-weight: 700; font-size: 1rem; outline: none; }
+    input[type="text"]:focus { border-color: var(--primary); }
+    .btn-submit { background: var(--primary); color: #fff; border: none; padding: 0 18px; border-radius: 14px; font-weight: 700; cursor: pointer; }
+
+    /* Alert Message */
+    .msg-box { padding: 12px 14px; border-radius: 12px; margin-bottom: 14px; display: none; font-size: 0.9rem; line-height: 1.4; }
+    .msg-success { background: #D1FAE5; color: #065F46; border: 1px solid #A7F3D0; }
+    .msg-error { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+    .btn-next { width: 100%; background: #1E293B; color: #fff; border: none; padding: 13px; border-radius: 14px; font-weight: 700; font-size: 1rem; cursor: pointer; display: none; }
+
+    /* Checklist Reminder for Station 5 */
+    .checklist-bar { display: flex; justify-content: space-between; font-size: 0.72rem; color: #64748B; background: #F1F5F9; padding: 6px 10px; border-radius: 10px; margin-bottom: 12px; font-weight: 700; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <div class="top-bar">
+    <div class="brand">⚡ WordForm 8</div>
+    <select id="unitSelect" onchange="filterUnit()"><option>Đang nạp...</option></select>
+  </div>
+
+  <!-- Thanh chọn 5 Trạm -->
+  <div class="tabs-nav">
+    <button class="tab-btn active" onclick="switchTab(1)">1. Tra Từ</button>
+    <button class="tab-btn" onclick="switchTab(2)">2. Manh Mối</button>
+    <button class="tab-btn" onclick="switchTab(3)">3. Ghép Đuôi</button>
+    <button class="tab-btn" onclick="switchTab(4)">4. Ôn Nhanh</button>
+    <button class="tab-btn" onclick="switchTab(5)">5. Thực Chiến</button>
+  </div>
+
+  <!-- TRẠM 1: POCKET BOOK -->
+  <div id="tab1" class="view-section active">
+    <div id="wfList">Đang kết nối Google Sheets...</div>
+  </div>
+
+  <!-- TRẠM 2: RADAR MANH MỐI -->
+  <div id="tab2" class="view-section">
+    <div class="box-sentence">
+      <div id="s2Text">Câu hỏi</div>
+      <div class="root-badge" id="s2Root">ROOT</div>
+    </div>
+    <div style="font-size: 0.85rem; font-weight: 700; color: #64748B; margin-bottom: 8px;">Nhìn chữ highlight vàng để chọn loại từ:</div>
+    <div class="grid-pos">
+      <button class="btn-action" onclick="checkS2('N')">Danh từ (N)</button>
+      <button class="btn-action" onclick="checkS2('V')">Động từ (V)</button>
+      <button class="btn-action" onclick="checkS2('ADJ')">Tính từ (Adj)</button>
+      <button class="btn-action" onclick="checkS2('ADV')">Trạng từ (Adv)</button>
+    </div>
+    <div id="s2Msg" class="msg-box"></div>
+    <button id="s2Next" class="btn-next" onclick="nextS2()">Câu kế tiếp ➔</button>
+  </div>
+
+  <!-- TRẠM 3: XƯỞNG GHÉP ĐUÔI -->
+  <div id="tab3" class="view-section">
+    <div class="box-sentence">
+      <div style="font-size: 0.9rem; color: #64748B; margin-bottom: 4px;">Tạo dạng <b id="s3Target" style="color:var(--primary);">...</b> của từ:</div>
+      <div style="font-size: 1.4rem; font-weight: 800; color: var(--primary);" id="s3Root">WORD</div>
+    </div>
+    <div style="font-size: 0.85rem; font-weight: 700; color: #64748B; margin-bottom: 8px;">Chọn hậu tố (đuôi) thích hợp:</div>
+    <div class="grid-pos" id="s3Options"></div>
+    <div id="s3Msg" class="msg-box"></div>
+    <button id="s3Next" class="btn-next" onclick="nextS3()">Từ kế tiếp ➔</button>
+  </div>
+
+  <!-- TRẠM 4: SPACED REPETITION (ÔN NHANH) -->
+  <div id="tab4" class="view-section">
+    <div class="box-sentence">
+      <div style="font-size: 0.85rem; color: #64748B;">Phản xạ 5 giây:</div>
+      <div id="s4Question" style="font-weight: 800; margin-top: 6px;">...</div>
+    </div>
+    <div class="grid-pos" id="s4Options"></div>
+    <div id="s4Msg" class="msg-box"></div>
+    <button id="s4Next" class="btn-next" onclick="nextS4()">Tiếp tục ➔</button>
+  </div>
+
+  <!-- TRẠM 5: ĐẤU TRƯỜNG THỰC CHIẾN -->
+  <div id="tab5" class="view-section">
+    <div class="checklist-bar">
+      <span>1. Soi manh mối</span><span>2. Chốt loại từ</span><span>3. Tra bảng từ</span><span>4. Check s/es, phủ định</span>
+    </div>
+    <div class="box-sentence">
+      <div id="s5Text">Câu hỏi</div>
+      <div class="root-badge" id="s5Root">ROOT</div>
+    </div>
+    <div class="grid-pos">
+      <button class="btn-action s5-pos" onclick="pickS5Pos('N', this)">N</button>
+      <button class="btn-action s5-pos" onclick="pickS5Pos('V', this)">V</button>
+      <button class="btn-action s5-pos" onclick="pickS5Pos('ADJ', this)">Adj</button>
+      <button class="btn-action s5-pos" onclick="pickS5Pos('ADV', this)">Adv</button>
+    </div>
+    <div class="input-row">
+      <input type="text" id="s5Input" placeholder="Gõ từ hoàn chỉnh..." autocomplete="off" />
+      <button class="btn-submit" onclick="checkS5()">Gửi</button>
+    </div>
+    <div id="s5Msg" class="msg-box"></div>
+    <button id="s5Next" class="btn-next" onclick="nextS5()">Câu kế tiếp ➔</button>
+  </div>
+</div>
+
+<script>
+  // -------------------------------------------------------------
+  // DÁN SHEET ID CỦA BẠN VÀO ĐÂY:
+  const SHEET_ID = '1LOt2SAyPXPDqJPuinIOHGeez8IUIFRn6FS5CdW6t9eQ';
+  // -------------------------------------------------------------
+
+  const URL_WF = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=WordFamilies`;
+  const URL_SENT = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=Sentences`;
+
+  let rawWF = [], rawSent = [];
+  let curWF = [], curSent = [];
+  let s2Idx = 0, s3Idx = 0, s4Idx = 0, s5Idx = 0;
+  let s5SelectedPos = '';
+
+  async function init() {
+    try {
+      const [resWF, resSent] = await Promise.all([fetch(URL_WF), fetch(URL_SENT)]);
+      const textWF = await resWF.text();
+      const textSent = await resSent.text();
+
+      const jsonWF = JSON.parse(textWF.substr(47).slice(0, -2));
+      const jsonSent = JSON.parse(textSent.substr(47).slice(0, -2));
+
+      rawWF = jsonWF.table.rows.map(r => ({
+        unit: r.c[0]?.v?.toString().trim() || 'Unit 1',
+        root: r.c[1]?.v || '',
+        meaning: r.c[2]?.v || '',
+        noun: r.c[3]?.v || '',
+        verb: r.c[4]?.v || '',
+        adj: r.c[5]?.v || '',
+        adv: r.c[6]?.v || ''
+      }));
+
+      rawSent = jsonSent.table.rows.map(r => ({
+        unit: r.c[0]?.v?.toString().trim() || 'Unit 1',
+        sentence: r.c[1]?.v || '',
+        root: r.c[2]?.v || '',
+        clueBefore: r.c[3]?.v || '',
+        clueAfter: r.c[4]?.v || '',
+        targetPos: (r.c[5]?.v || '').toUpperCase().trim(),
+        correctWord: (r.c[6]?.v || '').toLowerCase().trim(),
+        explain: r.c[7]?.v || ''
+      }));
+
+      setupUnitDropdown();
+    } catch (e) {
+      document.getElementById('wfList').innerText = 'Lỗi kết nối. Hãy kiểm tra lại Sheet ID hoặc quyền chia sẻ công khai của bảng tính!';
+    }
+  }
+
+  function setupUnitDropdown() {
+    const units = [...new Set([...rawWF.map(i => i.unit), ...rawSent.map(i => i.unit)])];
+    const sel = document.getElementById('unitSelect');
+    sel.innerHTML = '';
+    units.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u; opt.innerText = u;
+      sel.appendChild(opt);
+    });
+    filterUnit();
+  }
+
+  function filterUnit() {
+    const u = document.getElementById('unitSelect').value;
+    curWF = rawWF.filter(i => i.unit === u);
+    curSent = rawSent.filter(i => i.unit === u);
+    s2Idx = 0; s3Idx = 0; s4Idx = 0; s5Idx = 0;
+    renderTab1();
+    renderTab2();
+    renderTab3();
+    renderTab4();
+    renderTab5();
+  }
+
+  function switchTab(num) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === (num - 1)));
+    document.querySelectorAll('.view-section').forEach((s, i) => s.classList.toggle('active', i === (num - 1)));
+  }
+
+  // --- TRẠM 1: POCKET BOOK ---
+  function renderTab1() {
+    const box = document.getElementById('wfList');
+    if (!curWF.length) { box.innerHTML = 'Chưa có từ vựng cho Unit này.'; return; }
+    box.innerHTML = curWF.map(item => `
+      <div class="wf-card">
+        <div class="wf-root">${item.root}</div>
+        <div class="wf-meaning">Nghĩa: ${item.meaning}</div>
+        <div class="wf-grid">
+          <div class="wf-item"><span class="tag">N:</span>${item.noun || '-'}</div>
+          <div class="wf-item"><span class="tag">V:</span>${item.verb || '-'}</div>
+          <div class="wf-item"><span class="tag">Adj:</span>${item.adj || '-'}</div>
+          <div class="wf-item"><span class="tag">Adv:</span>${item.adv || '-'}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // --- TRẠM 2: MANH MỐI ---
+  function renderTab2() {
+    const msg = document.getElementById('s2Msg');
+    const nxt = document.getElementById('s2Next');
+    msg.style.display = 'none'; nxt.style.display = 'none';
+    if (!curSent.length) { document.getElementById('s2Text').innerText = 'Hết bài tập.'; return; }
+    const q = curSent[s2Idx];
+    let txt = q.sentence;
+    if (q.clueBefore) txt = txt.replace(q.clueBefore, `<span class="clue-tag">${q.clueBefore}</span>`);
+    if (q.clueAfter) txt = txt.replace(q.clueAfter, `<span class="clue-tag">${q.clueAfter}</span>`);
+    txt = txt.replace('[___]', `<span class="blank-tag">[ ______ ]</span>`);
+    document.getElementById('s2Text').innerHTML = txt;
+    document.getElementById('s2Root').innerText = q.root;
+  }
+  function checkS2(pos) {
+    const q = curSent[s2Idx];
+    const msg = document.getElementById('s2Msg');
+    msg.style.display = 'block';
+    if (pos === q.targetPos) {
+      msg.className = 'msg-box msg-success';
+      msg.innerHTML = `🎉 Chuẩn! Manh mối chỉ ra vị trí này cần <b>${pos}</b>.<br>💡 ${q.explain}`;
+    } else {
+      msg.className = 'msg-box msg-error';
+      msg.innerHTML = `❌ Chưa đúng. Vị trí này cần <b>${q.targetPos}</b>.<br>💡 ${q.explain}`;
+    }
+    document.getElementById('s2Next').style.display = 'block';
+  }
+  function nextS2() {
+    s2Idx = (s2Idx + 1) % curSent.length;
+    renderTab2();
+  }
+
+  // --- TRẠM 3: GHÉP ĐUÔI ---
+  const SUFFIX_POOL = ['-tion', '-ment', '-ful', '-less', '-ly', '-ous', '-ed', '-ing', '-er'];
+  function renderTab3() {
+    const msg = document.getElementById('s3Msg');
+    const nxt = document.getElementById('s3Next');
+    msg.style.display = 'none'; nxt.style.display = 'none';
+    if (!curWF.length) return;
+    const item = curWF[s3Idx];
+    
+    // Tìm một dạng từ có tồn tại (ưu tiên Adj hoặc Noun)
+    let targetPos = 'Tính từ (Adj)', answer = item.adj;
+    if (!answer) { targetPos = 'Danh từ (N)'; answer = item.noun; }
+    if (!answer) { targetPos = 'Trạng từ (Adv)'; answer = item.adv; }
+    
+    document.getElementById('s3Target').innerText = targetPos;
+    document.getElementById('s3Root').innerText = item.root.toUpperCase();
+
+    // Tìm đuôi đúng sơ bộ
+    let correctSuffix = SUFFIX_POOL.find(s => answer.toLowerCase().endsWith(s.replace('-', ''))) || '-tion';
+    let options = [correctSuffix];
+    while(options.length < 4) {
+      let r = SUFFIX_POOL[Math.floor(Math.random() * SUFFIX_POOL.length)];
+      if(!options.includes(r)) options.push(r);
+    }
+    options.sort(() => Math.random() - 0.5);
+
+    const optsBox = document.getElementById('s3Options');
+    optsBox.innerHTML = options.map(opt => `
+      <button class="btn-action" onclick="checkS3('${opt}', '${correctSuffix}', '${answer}')">${opt}</button>
+    `).join('');
+  }
+  function checkS3(chosen, correct, fullWord) {
+    const msg = document.getElementById('s3Msg');
+    msg.style.display = 'block';
+    if (chosen === correct) {
+      msg.className = 'msg-box msg-success';
+      msg.innerHTML = `🎉 Giỏi lắm! Từ hoàn chỉnh là: <b>${fullWord}</b>`;
+    } else {
+      msg.className = 'msg-box msg-error';
+      msg.innerHTML = `❌ Đuôi đúng là <b>${correct}</b> $\\rightarrow$ <b>${fullWord}</b>`;
+    }
+    document.getElementById('s3Next').style.display = 'block';
+  }
+  function nextS3() {
+    s3Idx = (s3Idx + 1) % curWF.length;
+    renderTab3();
+  }
+
+  // --- TRẠM 4: SPACED REPETITION (ÔN NHANH) ---
+  function renderTab4() {
+    const msg = document.getElementById('s4Msg');
+    const nxt = document.getElementById('s4Next');
+    msg.style.display = 'none'; nxt.style.display = 'none';
+    if (!curWF.length) return;
+    const item = curWF[s4Idx];
+    const qTypes = [
+      { prompt: `Danh từ của "${item.root}" là gì?`, ans: item.noun },
+      { prompt: `Tính từ của "${item.root}" là gì?`, ans: item.adj },
+      { prompt: `Trạng từ của "${item.root}" là gì?`, ans: item.adv }
+    ].filter(t => t.ans);
+
+    const activeQ = qTypes[Math.floor(Math.random() * qTypes.length)] || { prompt: `Nghĩa của "${item.root}" là?`, ans: item.meaning };
+    document.getElementById('s4Question').innerText = activeQ.prompt;
+
+    // Lấy 3 đáp án nhiễu
+    let choices = [activeQ.ans];
+    curWF.forEach(w => {
+      [w.noun, w.adj, w.adv, w.meaning].forEach(val => {
+        if(val && !choices.includes(val) && choices.length < 4) choices.push(val);
+      });
+    });
+    choices.sort(() => Math.random() - 0.5);
+
+    const optsBox = document.getElementById('s4Options');
+    optsBox.innerHTML = choices.map(ch => `
+      <button class="btn-action" onclick="checkS4('${ch}', '${activeQ.ans}')">${ch}</button>
+    `).join('');
+  }
+  function checkS4(chosen, correct) {
+    const msg = document.getElementById('s4Msg');
+    msg.style.display = 'block';
+    if (chosen === correct) {
+      msg.className = 'msg-box msg-success';
+      msg.innerHTML = `🎉 Chính xác!`;
+    } else {
+      msg.className = 'msg-box msg-error';
+      msg.innerHTML = `❌ Đáp án đúng phải là: <b>${correct}</b>`;
+    }
+    document.getElementById('s4Next').style.display = 'block';
+  }
+  function nextS4() {
+    s4Idx = (s4Idx + 1) % curWF.length;
+    renderTab4();
+  }
+
+  // --- TRẠM 5: THỰC CHIẾN TỔNG HỢP ---
+  function renderTab5() {
+    s5SelectedPos = '';
+    document.getElementById('s5Input').value = '';
+    document.querySelectorAll('.s5-pos').forEach(b => b.classList.remove('selected'));
+    document.getElementById('s5Msg').style.display = 'none';
+    document.getElementById('s5Next').style.display = 'none';
+    if (!curSent.length) { document.getElementById('s5Text').innerText = 'Hết bài tập.'; return; }
+    const q = curSent[s5Idx];
+    let txt = q.sentence;
+    if (q.clueBefore) txt = txt.replace(q.clueBefore, `<span class="clue-tag">${q.clueBefore}</span>`);
+    if (q.clueAfter) txt = txt.replace(q.clueAfter, `<span class="clue-tag">${q.clueAfter}</span>`);
+    txt = txt.replace('[___]', `<span class="blank-tag">[ ______ ]</span>`);
+    document.getElementById('s5Text').innerHTML = txt;
+    document.getElementById('s5Root').innerText = q.root;
+  }
+  function pickS5Pos(pos, btn) {
+    s5SelectedPos = pos;
+    document.querySelectorAll('.s5-pos').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+  function checkS5() {
+    const q = curSent[s5Idx];
+    const val = document.getElementById('s5Input').value.trim().toLowerCase();
+    const msg = document.getElementById('s5Msg');
+    if (!s5SelectedPos) { alert('Em hãy bấm chọn loại từ (N, V, Adj, Adv) ở bước 2 trước nhé!'); return; }
+    msg.style.display = 'block';
+
+    const okPos = (s5SelectedPos === q.targetPos);
+    const okWord = (val === q.correctWord);
+
+    if (okPos && okWord) {
+      msg.className = 'msg-box msg-success';
+      msg.innerHTML = `🏆 <b>XUẤT SẮC!</b> Em làm đúng cả 4 bước.<br>💡 ${q.explain}`;
+    } else {
+      msg.className = 'msg-box msg-error';
+      let err = '❌ <b>Chưa hoàn thiện:</b><br>';
+      if (!okPos) err += `• Loại từ đúng: <b>${q.targetPos}</b><br>`;
+      if (!okWord) err += `• Từ đúng: <b>${q.correctWord}</b> (chú ý số nhiều/tiền tố nếu có)<br>`;
+      err += `💡 <i>${q.explain}</i>`;
+      msg.innerHTML = err;
+    }
+    document.getElementById('s5Next').style.display = 'block';
+  }
+  function nextS5() {
+    s5Idx = (s5Idx + 1) % curSent.length;
+    renderTab5();
+  }
+
+  // Khởi chạy nạp dữ liệu
+  init();
+</script>
+</body>
+</html>
